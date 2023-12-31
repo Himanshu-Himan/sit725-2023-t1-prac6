@@ -1,28 +1,35 @@
+let socket = io();
+
 async function sendMessage() {
   const messageInput = document.getElementById("messageInput");
-  const message = messageInput.value; 
+  const message = messageInput.value;
 
   try {
-    const response = await fetch(`/messages/sendMessage`, { // Updated route
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok.");
-    }
-
-    const responseData = await response.json();
-    displayResponse(responseData.response);
+    socket.emit("sendMessage", { message }); 
+    displaySentMessage(message); 
   } catch (error) {
     console.error("Error:", error);
   }
 
   messageInput.value = "";
 }
+
+function displaySentMessage(message) {
+  const responseContainer = document.getElementById("responseContainer");
+  const newMessage = document.createElement("p");
+  newMessage.textContent = `Sent: ${message}`;
+  responseContainer.appendChild(newMessage);
+}
+
+socket.on("messageSentConfirmation", (responseData) => {
+  displayResponse(responseData.response);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const sendMessageButton = document.getElementById("sendMessageButton");
+  sendMessageButton.addEventListener("click", sendMessage);
+});
+
 
 function displayResponse(response) {
   const responseContainer = document.getElementById("responseContainer");
